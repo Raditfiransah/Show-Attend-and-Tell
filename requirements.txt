@@ -1,0 +1,11 @@
+torch
+torchvision
+numpy
+datasets
+Pillow
+tqdm
+matplotlib
+nltk
+streamlit
+scikit-image
+protobuf<=3.20.1

@@ -1,0 +1,23 @@
+# IDE
+.idea/
+.vscode/
+
+# Python
+__pycache__
+**/__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+
+# Data & Models
+/data/
+/models/
+
+# Env
+.env
+.env.*
+
+# Streamlit
+.streamlit/
