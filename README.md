@@ -123,10 +123,11 @@ python src/inference.py --image path/to/image.jpg --beam_size 5
 
 You can adjust hyperparameters in `src/config.py`:
 
-- `BATCH_SIZE`: 32
+- `BATCH_SIZE`: 64
 - `EMBED_DIM`: 256
 - `HIDDEN_DIM`: 512
 - `ATTENTION_DIM`: 256
+- `ENCODER_DIM`: 2048
 - `LEARNING_RATE`: 1e-4
 
 ## License
