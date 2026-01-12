@@ -10,7 +10,7 @@ import os
 import numpy as np
 
 from dataset import get_loader
-from model import Encoder, DecoderRNN
+from model import Encoder, DecoderLSTM
 from utils import save_checkpoint, load_vocab
 from config import Config
 
@@ -18,10 +18,10 @@ def train():
     device = Config.DEVICE
     print(f"Using device: {device}")
     
-    # Override config for RNN model
-    Config.MODEL_DIR = 'models/cnn_rnn'
+    # Explicitly set config for LSTM model (matches default but good for safety)
+    Config.MODEL_DIR = 'models/cnn_lstm'
     Config.MODEL_SAVE_PATH = os.path.join(Config.MODEL_DIR, 'best_model.pth')
-    
+
     # Ensure dir exists
     if not os.path.exists(Config.MODEL_DIR):
         os.makedirs(Config.MODEL_DIR)
@@ -67,7 +67,7 @@ def train():
 
     # Initialize Models
     encoder = Encoder(encoded_image_size=7).to(device)
-    decoder = DecoderRNN(
+    decoder = DecoderLSTM(
         attention_dim=Config.ATTENTION_DIM,
         embed_dim=Config.EMBED_DIM,
         decoder_dim=Config.HIDDEN_DIM,

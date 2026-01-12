@@ -11,46 +11,42 @@ parent_dir = os.path.dirname(current_dir)
 src_dir = os.path.join(parent_dir, 'src')
 sys.path.append(src_dir)
 
-from model import Encoder as EncoderRNN
-from model import DecoderRNN as DecoderRNN_base
-from model_lstm import DecoderRNN as DecoderRNN_lstm
+from model import Encoder, DecoderLSTM
 from utils import load_vocab
 from config import Config
 from inference import caption_image_beam_search
 
 # Custom cached loader
 @st.cache_resource
-def load_resources(model_type):
+def load_resources():
     device = Config.DEVICE
-    vocab_path = os.path.join(parent_dir, 'models/vocab.pkl') # Use absolute path relative to project root
+    vocab_path = os.path.join(parent_dir, Config.VOCAB_PATH) # Use absolute path relative to project root
     
     if not os.path.exists(vocab_path):
-        return None, None, None, "Vocab not found"
+        # Fallback check
+        vocab_path = os.path.join(parent_dir, 'models/vocab.pkl')
+        if not os.path.exists(vocab_path):
+             return None, None, None, "Vocab not found"
 
     vocab = load_vocab(vocab_path)
     
-    encoder = EncoderRNN().to(device)
+    encoder = Encoder().to(device)
     encoder.eval()
     
-    if model_type == 'CNN + RNN':
-        decoder = DecoderRNN_base(
-            attention_dim=Config.ATTENTION_DIM,
-            embed_dim=Config.EMBED_DIM,
-            decoder_dim=Config.HIDDEN_DIM,
-            vocab_size=len(vocab),
-            dropout=Config.DROPOUT  
-        ).to(device)
-        model_path = os.path.join(parent_dir, 'models/cnn_rnn/best_model.pth')
-    else: # CNN + LSTM
-        decoder = DecoderRNN_lstm(
-            attention_dim=Config.ATTENTION_DIM,
-            embed_dim=Config.EMBED_DIM,
-            decoder_dim=Config.HIDDEN_DIM,
-            vocab_size=len(vocab),
-            dropout=Config.DROPOUT
-        ).to(device)
-        model_path = os.path.join(parent_dir, 'models/cnn_lstm/best_model.pth')
-        
+    decoder = DecoderLSTM(
+        attention_dim=Config.ATTENTION_DIM,
+        embed_dim=Config.EMBED_DIM,
+        decoder_dim=Config.HIDDEN_DIM,
+        vocab_size=len(vocab),
+        dropout=Config.DROPOUT  
+    ).to(device)
+    
+    # Try finding the model in the config path or fallback
+    model_path = os.path.join(parent_dir, Config.MODEL_SAVE_PATH)
+    if not os.path.exists(model_path):
+         # Try specific cnn_lstm path if default config path fails
+         model_path = os.path.join(parent_dir, 'models/cnn_lstm/best_model.pth')
+         
     if os.path.exists(model_path):
         checkpoint = torch.load(model_path, map_location=device)
         decoder.load_state_dict(checkpoint['state_dict'])
@@ -67,10 +63,8 @@ def main():
     
     # Sidebar for controls
     st.sidebar.header("Configuration")
-    model_option = st.sidebar.selectbox(
-        "Select Model Architecture",
-        ('CNN + RNN', 'CNN + LSTM')
-    )
+    st.sidebar.header("Configuration")
+    # model_option removed
     
     beam_size = st.sidebar.slider("Beam Size", 1, 10, 3)
     
@@ -90,7 +84,7 @@ def main():
             st.subheader("Generated Caption")
             if st.button('Generate Caption'):
                 with st.spinner('Thinking...'):
-                    encoder, decoder, vocab, error = load_resources(model_option)
+                    encoder, decoder, vocab, error = load_resources()
                     
                     if error:
                         st.error(error)

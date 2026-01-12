@@ -51,9 +51,9 @@ class Attention(nn.Module):
 
         return attention_weighted_encoding, alpha
 
-class DecoderRNN(nn.Module):
-    def __init__(self, attention_dim, embed_dim, decoder_dim, vocab_size, encoder_dim=2048, dropout=0.5):
-        super(DecoderRNN, self).__init__()
+class DecoderLSTM(nn.Module):
+    def __init__(self, attention_dim, embed_dim, decoder_dim, vocab_size, encoder_dim=2048, dropout=0.5, pretrained_embeddings=None):
+        super(DecoderLSTM, self).__init__()
 
         self.encoder_dim = encoder_dim
         self.attention_dim = attention_dim
@@ -65,6 +65,10 @@ class DecoderRNN(nn.Module):
         self.attention = Attention(encoder_dim, decoder_dim, attention_dim)  # attention network
 
         self.embedding = nn.Embedding(vocab_size, embed_dim)  # embedding layer
+        
+        if pretrained_embeddings is not None:
+            self.embedding.weight = nn.Parameter(pretrained_embeddings)
+            
         self.dropout = nn.Dropout(p=self.dropout)
         
         # LSTM cell
@@ -78,13 +82,14 @@ class DecoderRNN(nn.Module):
         self.sigmoid = nn.Sigmoid()
         
         self.fc = nn.Linear(decoder_dim, vocab_size)  # linear layer to find scores over vocabulary
-        self.init_weights()  # initialize some layers with the uniform distribution
+        self.init_weights(pretrained_embeddings is not None)  # initialize some layers with the uniform distribution
 
-    def init_weights(self):
+    def init_weights(self, has_pretrained=False):
         """
         Initialize some parameters with values from the uniform distribution, for easier convergence.
         """
-        self.embedding.weight.data.uniform_(-0.1, 0.1)
+        if not has_pretrained:
+            self.embedding.weight.data.uniform_(-0.1, 0.1)
         self.fc.bias.data.fill_(0)
         self.fc.weight.data.uniform_(-0.1, 0.1)
 

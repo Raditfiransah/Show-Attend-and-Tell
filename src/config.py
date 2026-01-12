@@ -19,7 +19,7 @@ class Config:
     DROPOUT = 0.5
     
     # Training parameters
-    BATCH_SIZE = 32
+    BATCH_SIZE = 64
     LEARNING_RATE = 1e-4
     NUM_EPOCHS = 20
     TEACHER_FORCING_RATIO = 0.5 # Optional if we want to schedule it
@@ -34,5 +34,5 @@ class Config:
     # Paths - Use environment variables for flexibility in Docker
     MODEL_DIR = os.getenv('MODEL_DIR', 'models/cnn_lstm')
     MODEL_SAVE_PATH = os.path.join(MODEL_DIR, 'best_model.pth')
-    VOCAB_PATH = os.getenv('VOCAB_PATH', 'models/vocab.pkl')
+    VOCAB_PATH = os.getenv('VOCAB_PATH', 'models/cnn_lstm/vocab.pkl')
     DATA_DIR = os.getenv('DATA_DIR', './data')

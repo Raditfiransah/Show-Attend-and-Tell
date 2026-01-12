@@ -9,7 +9,7 @@ import skimage.transform
 from PIL import Image
 
 from config import Config
-from model import Encoder, DecoderRNN
+from model import Encoder, DecoderLSTM
 from utils import load_vocab
 
 def caption_image_beam_search(encoder, decoder, image_path, word_map, beam_size=3):
@@ -186,7 +186,7 @@ if __name__ == '__main__':
     # But wait, did we verify 'encoder.pth' path? train.py saves to 'encoder.pth' in root currently.
     # We should update train.py to save encoder to models/ too if used.
     
-    decoder = DecoderRNN(
+    decoder = DecoderLSTM(
         attention_dim=Config.ATTENTION_DIM,
         embed_dim=Config.EMBED_DIM,
         decoder_dim=Config.HIDDEN_DIM,

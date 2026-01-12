@@ -21,18 +21,17 @@ Show-Attend-and-Tell/
 │   └── main.py         # Streamlit Web App
 ├── data/               # Dataset files
 ├── models/             # Saved artifacts
-│   ├── cnn_lstm/       # Checkpoints for CNN+LSTM
-│   ├── cnn_rnn/        # Checkpoints for CNN+RNN
+│   ├── cnn_lstm/       # Checkpoints (default)
 │   └── vocab.pkl       # Shared Vocabulary
 ├── src/                # Source code
 │   ├── build_vocab.py  # Vocabulary generation script
 │   ├── config.py       # Configuration and hyperparameters
 │   ├── dataset.py      # Custom Dataset class
+│   ├── download_data.py # Dataset downloader
+│   ├── evaluate.py     # Evaluation script (BLEU scores)
 │   ├── inference.py    # Inference script with Beam Search
-│   ├── model.py        # Baseline Model (CNN+RNN)
-│   ├── model_lstm.py   # Enhanced Model (CNN+LSTM)
-│   ├── train.py        # Training loop for CNN+RNN
-│   ├── train_cnn_lstm.py # Training loop for CNN+LSTM
+│   ├── model.py        # CNN + LSTM Model (DecoderLSTM)
+│   ├── train.py        # Training loop
 │   ├── utils.py        # Utility functions
 │   └── verify_setup.py # Environment verification script
 ├── Dockerfile          # Docker configuration
@@ -79,21 +78,23 @@ This will generate `models/vocab.pkl`.
 
 ### 2. Training
 
-You can train two variations of the model.
+Train the CNN + LSTM model:
 
-**Option A: CNN + RNN (Baseline)**
 ```bash
 python src/train.py
 ```
-Checkpoints saved to `models/cnn_rnn/`.
+Checkpoints will be saved to `models/cnn_lstm/` (or as configured in `src/config.py`).
 
-**Option B: CNN + LSTM (Enhanced)**
+### 3. Evaluation (BLEU Scores)
+
+Evaluate the trained model on the validation set using BLEU-4 metrics. You can also optionally specify pretrained embeddings (e.g., GloVe) to load into the model during evaluation (or at initialization).
+
 ```bash
-python src/train_cnn_lstm.py
+python src/evaluate.py --model_path models/cnn_lstm/best_model.pth --embedding_path glove.6B.200d.txt
 ```
-Checkpoints saved to `models/cnn_lstm/`.
+*Note: Make sure your `EMBED_DIM` in `src/config.py` matches the dimension of the pretrained vectors if you are training with them or replacing them.*
 
-### 3. Web Application (The Vibe Reader)
+### 4. Web Application (The Vibe Reader)
 
 We provide a **Streamlit** based web interface to easily interact with the trained models.
 
@@ -110,12 +111,12 @@ python run_docker.py
 ```
 This will build the image `vibe-reader-app` and launch it on `http://localhost:8501`.
 
-### 4. CLI Inference
+### 5. CLI Inference
 
 Generate captions for new images using the command line:
 
 ```bash
-python src/inference.py --image path/to/image.jpg --model models/cnn_lstm/best_model.pth --beam_size 5
+python src/inference.py --image path/to/image.jpg --beam_size 5
 ```
 
 ## 🛠 Configuration
