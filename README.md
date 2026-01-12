@@ -6,14 +6,14 @@
 
 A PyTorch implementation of **Show, Attend and Tell: Neural Image Caption Generation with Visual Attention** (Xu et al., ICML 2015). This project uses a **ResNet50** encoder and an **LSTM** decoder with **Bahdanau Attention** to generate descriptive captions for images in the **Flickr8k** dataset.
 
-## 🧠 Architecture
+## Architecture
 
 The model consists of three main components:
 1.  **Encoder**: A pre-trained **ResNet50** (ImageNet) without the fully connected layers. It extracts spatial feature vectors `(7x7x2048)` from input images.
 2.  **Attention**: A **Bahdanau (Additive) Attention** mechanism that computes a weighted sum of encoder features based on the decoder's current hidden state. This allows the model to "look" at specific parts of the image at each time step.
 3.  **Decoder**: An **LSTM** network that takes the context vector (from attention) and previous word embedding to predict the next word in the sequence.
 
-## 📂 Directory Structure
+## Directory Structure
 
 ```
 Show-Attend-and-Tell/
@@ -40,7 +40,7 @@ Show-Attend-and-Tell/
 └── README.md           # This documentation
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Installation
 
@@ -119,7 +119,7 @@ Generate captions for new images using the command line:
 python src/inference.py --image path/to/image.jpg --beam_size 5
 ```
 
-## 🛠 Configuration
+## Configuration
 
 You can adjust hyperparameters in `src/config.py`:
 
@@ -129,6 +129,6 @@ You can adjust hyperparameters in `src/config.py`:
 - `ATTENTION_DIM`: 256
 - `LEARNING_RATE`: 1e-4
 
-## 📜 License
+## License
 
 MIT License.
