@@ -43,17 +43,34 @@ Show-Attend-and-Tell/
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Installation
 
-Ensure you have Python 3.8+ installed.
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Raditfiransah/Show-Attend-and-Tell.git
+   cd Show-Attend-and-Tell
+   ```
 
-```bash
-pip install -r requirements.txt
-```
+2. **Create a Virtual Environment** (Recommended):
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ### 1. Data Preparation
 
-First, ensure your dataset is placed in the `data/` directory. Then, build the vocabulary:
+First, download the dataset and ensure it is placed in the `data/` directory:
+
+```bash
+python src/download_data.py
+```
+
+Then, build the vocabulary:
 
 ```bash
 python src/build_vocab.py

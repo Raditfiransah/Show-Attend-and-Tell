@@ -17,6 +17,14 @@ from config import Config
 def train():
     device = Config.DEVICE
     print(f"Using device: {device}")
+    
+    # Override config for RNN model
+    Config.MODEL_DIR = 'models/cnn_rnn'
+    Config.MODEL_SAVE_PATH = os.path.join(Config.MODEL_DIR, 'best_model.pth')
+    
+    # Ensure dir exists
+    if not os.path.exists(Config.MODEL_DIR):
+        os.makedirs(Config.MODEL_DIR)
 
     # Load vocabulary
     if not os.path.exists(Config.VOCAB_PATH):
