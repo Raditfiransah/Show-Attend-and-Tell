@@ -11,9 +11,9 @@ parent_dir = os.path.dirname(current_dir)
 src_dir = os.path.join(parent_dir, 'src')
 sys.path.append(src_dir)
 
-from model import Encoder as EncoderRNN
-from model import DecoderRNN as DecoderRNN_base
-from model_lstm import DecoderRNN as DecoderRNN_lstm
+from model_rnn import Encoder as EncoderRNN
+from model_rnn import DecoderRNN as DecoderRNN_base
+from model_lstm import DecoderLSTM as DecoderLSTM_lstm
 from utils import load_vocab
 from config import Config
 from inference import caption_image_beam_search
@@ -42,7 +42,7 @@ def load_resources(model_type):
         ).to(device)
         model_path = os.path.join(parent_dir, 'models/cnn_rnn/best_model.pth')
     else: # CNN + LSTM
-        decoder = DecoderRNN_lstm(
+        decoder = DecoderLSTM_lstm(
             attention_dim=Config.ATTENTION_DIM,
             embed_dim=Config.EMBED_DIM,
             decoder_dim=Config.HIDDEN_DIM,

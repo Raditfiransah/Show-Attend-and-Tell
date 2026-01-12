@@ -38,7 +38,7 @@ def verify():
 
     print("\n3. Checking Model Instantiation and Forward Pass (Dummy Data)...")
     try:
-        from model import Encoder, DecoderRNN, Attention
+        from model_rnn import Encoder, DecoderRNN, Attention
         
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         print(f"   Device: {device}")

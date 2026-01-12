@@ -32,7 +32,7 @@ class Config:
     DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     # Paths - Use environment variables for flexibility in Docker
-    MODEL_DIR = os.getenv('MODEL_DIR', 'models/cnn_lstm')
+    MODEL_DIR = os.getenv('MODEL_DIR', 'models/cnn_rnn')
     MODEL_SAVE_PATH = os.path.join(MODEL_DIR, 'best_model.pth')
     VOCAB_PATH = os.getenv('VOCAB_PATH', 'models/vocab.pkl')
     DATA_DIR = os.getenv('DATA_DIR', './data')

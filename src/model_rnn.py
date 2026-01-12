@@ -62,23 +62,21 @@ class DecoderRNN(nn.Module):
         self.vocab_size = vocab_size
         self.dropout = dropout
 
-        self.attention = Attention(encoder_dim, decoder_dim, attention_dim)  # attention network
+        self.attention = Attention(encoder_dim, decoder_dim, attention_dim) 
 
-        self.embedding = nn.Embedding(vocab_size, embed_dim)  # embedding layer
+        self.embedding = nn.Embedding(vocab_size, embed_dim)
         self.dropout = nn.Dropout(p=self.dropout)
         
-        # LSTM cell
-        # Input size: embed_dim + encoder_dim (because we concatenate attention weighted encoding)
-        self.lstm = nn.LSTMCell(embed_dim + encoder_dim, decoder_dim, bias=True) 
+        # RNN layer (using Tanh nonlinearity)
+        self.rnn = nn.RNNCell(embed_dim + encoder_dim, decoder_dim, bias=True, nonlinearity='tanh') 
         
-        self.init_h = nn.Linear(encoder_dim, decoder_dim)  # linear layer to find initial hidden state of LSTMCell
-        self.init_c = nn.Linear(encoder_dim, decoder_dim)  # linear layer to find initial cell state of LSTMCell
+        self.init_h = nn.Linear(encoder_dim, decoder_dim) 
         
-        self.f_beta = nn.Linear(decoder_dim, encoder_dim)  # linear layer to create a sigmoid-activated gate
+        self.f_beta = nn.Linear(decoder_dim, encoder_dim)  
         self.sigmoid = nn.Sigmoid()
         
-        self.fc = nn.Linear(decoder_dim, vocab_size)  # linear layer to find scores over vocabulary
-        self.init_weights()  # initialize some layers with the uniform distribution
+        self.fc = nn.Linear(decoder_dim, vocab_size)  
+        self.init_weights()  
 
     def init_weights(self):
         """
@@ -105,14 +103,13 @@ class DecoderRNN(nn.Module):
 
     def init_hidden_state(self, encoder_out):
         """
-        Creates the initial hidden and cell states for the LSTM based on the encoded images.
+        Creates the initial hidden state for the RNN based on the encoded images.
         :param encoder_out: encoded images, a tensor of dimension (batch_size, num_pixels, encoder_dim)
-        :return: hidden state, cell state
+        :return: hidden state
         """
         mean_encoder_out = encoder_out.mean(dim=1)
         h = self.init_h(mean_encoder_out)  # (batch_size, decoder_dim)
-        c = self.init_c(mean_encoder_out)
-        return h, c
+        return h
 
     def forward(self, encoder_out, encoded_captions, caption_lengths):
         """
@@ -139,8 +136,8 @@ class DecoderRNN(nn.Module):
         # Embedding
         embeddings = self.embedding(encoded_captions)  # (batch_size, max_caption_length, embed_dim)
 
-        # Initialize LSTM state
-        h, c = self.init_hidden_state(encoder_out)  # (batch_size, decoder_dim)
+        # Initialize RNN state
+        h = self.init_hidden_state(encoder_out)  # (batch_size, decoder_dim)
 
         # We won't decode at the <end> position, since we've finished generating as soon as we generate <end>
         # So, decoding lengths are actual lengths - 1
@@ -155,14 +152,17 @@ class DecoderRNN(nn.Module):
         # then generate a new word in the decoder with the previous word and the attention weighted encoding
         for t in range(max(decode_lengths)):
             batch_size_t = sum([l > t for l in decode_lengths])
+            
+            # Attention mechanism
             attention_weighted_encoding, alpha = self.attention(encoder_out[:batch_size_t], h[:batch_size_t])
             
             gate = self.sigmoid(self.f_beta(h[:batch_size_t]))  # gating scalar, (batch_size_t, encoder_dim)
             attention_weighted_encoding = gate * attention_weighted_encoding
             
-            h, c = self.lstm(
+            # RNN step
+            h = self.rnn(
                 torch.cat([embeddings[:batch_size_t, t, :], attention_weighted_encoding], dim=1),
-                (h[:batch_size_t], c[:batch_size_t])
+                h[:batch_size_t]
             )  # (batch_size_t, decoder_dim)
             
             preds = self.fc(self.dropout(h))  # (batch_size_t, vocab_size)

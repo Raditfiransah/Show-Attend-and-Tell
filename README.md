@@ -83,7 +83,7 @@ You can train two variations of the model.
 
 **Option A: CNN + RNN (Baseline)**
 ```bash
-python src/train.py
+python src/train_cnn_rnn.py
 ```
 Checkpoints saved to `models/cnn_rnn/`.
 

@@ -51,9 +51,9 @@ class Attention(nn.Module):
 
         return attention_weighted_encoding, alpha
 
-class DecoderRNN(nn.Module):
+class DecoderLSTM(nn.Module):
     def __init__(self, attention_dim, embed_dim, decoder_dim, vocab_size, encoder_dim=2048, dropout=0.5):
-        super(DecoderRNN, self).__init__()
+        super(DecoderLSTM, self).__init__()
 
         self.encoder_dim = encoder_dim
         self.attention_dim = attention_dim
@@ -88,7 +88,7 @@ class DecoderRNN(nn.Module):
         self.fc.bias.data.fill_(0)
         self.fc.weight.data.uniform_(-0.1, 0.1)
 
-    def load_pretrained_embeddings(self, embeddings):
+    def load_pretrained_    (self, embeddings):
         """
         Loads embedding layer with pre-trained embeddings.
         :param embeddings: pre-trained embeddings

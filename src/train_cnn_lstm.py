@@ -10,7 +10,7 @@ import os
 import numpy as np
 
 from dataset import get_loader
-from model import Encoder
+from model_rnn import Encoder
 from model_lstm import DecoderRNN
 from utils import save_checkpoint, load_vocab
 from config import Config

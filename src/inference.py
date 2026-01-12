@@ -9,7 +9,7 @@ import skimage.transform
 from PIL import Image
 
 from config import Config
-from model import Encoder, DecoderRNN
+from model_rnn import Encoder, DecoderRNN
 from utils import load_vocab
 
 def caption_image_beam_search(encoder, decoder, image_path, word_map, beam_size=3):
@@ -61,7 +61,14 @@ def caption_image_beam_search(encoder, decoder, image_path, word_map, beam_size=
 
     # Start decoding
     step = 1
-    h, c = decoder.init_hidden_state(encoder_out)
+    
+    # Handle different model types (RNN vs LSTM)
+    states = decoder.init_hidden_state(encoder_out)
+    if isinstance(states, tuple):
+        h, c = states
+    else:
+        h = states
+        c = None
 
     # s is a number less than or equal to k, because sequences are removed from this process once they hit <end>
     while True:
@@ -73,7 +80,13 @@ def caption_image_beam_search(encoder, decoder, image_path, word_map, beam_size=
         gate = decoder.sigmoid(decoder.f_beta(h))  # gating scalar, (s, encoder_dim)
         awe = gate * awe
 
-        h, c = decoder.lstm(torch.cat([embeddings, awe], dim=1), (h, c))  # (s, decoder_dim)
+        # Input for the recurrent step
+        rnn_input = torch.cat([embeddings, awe], dim=1)
+        
+        if c is None:
+             h = decoder.rnn(rnn_input, h)
+        else:
+             h, c = decoder.lstm(rnn_input, (h, c))
 
         scores = decoder.fc(decoder.dropout(h))  # (s, vocab_size)
         scores = F.log_softmax(scores, dim=1)
@@ -115,7 +128,8 @@ def caption_image_beam_search(encoder, decoder, image_path, word_map, beam_size=
         seqs = seqs[incomplete_inds]
         seqs_alpha = seqs_alpha[incomplete_inds]
         h = h[prev_word_inds[incomplete_inds]]
-        c = c[prev_word_inds[incomplete_inds]]
+        if c is not None:
+            c = c[prev_word_inds[incomplete_inds]]
         encoder_out = encoder_out[prev_word_inds[incomplete_inds]]
         top_k_scores = top_k_scores[incomplete_inds].unsqueeze(1)
         k_prev_words = next_word_inds[incomplete_inds].unsqueeze(1)
@@ -169,22 +183,22 @@ if __name__ == '__main__':
     
     # Re-initialize models
     encoder = Encoder().to(device)
-    # Note: Encoder is not in the checkpoint in current train.py! 
-    # Current train.py only saves decoder state_dict in 'state_dict'.
+    # Note: Encoder is not in the checkpoint in current train_cnn_rnn.py!
+    # Current train_cnn_rnn.py only saves decoder state_dict in 'state_dict'.
     # And implementation_plan said "Also save encoder if fine-tuned".
     # But encoder is frozen by default. So base ResNet is used.
     # HOWEVER, we removed the last layers in __init__. So we need to instantiate Encoder class.
     # It loads pretrained resnet weights. This is fine.
     # If we fine-tune, we MUST load the encoder weights.
-    # Let's check train.py saving logic.
+    # Let's check train_cnn_rnn.py saving logic.
     
-    # In train.py:
+    # In train_cnn_rnn.py:
     # save_checkpoint({ ..., 'state_dict': decoder.state_dict(), ... })
     # if encoder_optimizer: torch.save(encoder.state_dict(), 'encoder.pth')
     
     # So if we didn't fine tune, we just use standard Encoder(). 
-    # But wait, did we verify 'encoder.pth' path? train.py saves to 'encoder.pth' in root currently.
-    # We should update train.py to save encoder to models/ too if used.
+    # But wait, did we verify 'encoder.pth' path? train_cnn_rnn.py saves to 'encoder.pth' in root currently.
+    # We should update train_cnn_rnn.py to save encoder to models/ too if used.
     
     decoder = DecoderRNN(
         attention_dim=Config.ATTENTION_DIM,

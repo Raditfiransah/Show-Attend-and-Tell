@@ -20,7 +20,7 @@ def main():
     image_name = "vibe-reader-app"
     container_name = "vibe-reader-container"
     
-    print("🚀 Building and Deploying Vibe Reader...")
+    print("Building and Deploying Vibe Reader...")
     
     # Check if we are in the right directory
     if not os.path.exists("Dockerfile"):
@@ -28,12 +28,12 @@ def main():
         sys.exit(1)
 
     # Build Docker Image
-    print("\n📦 Building Docker Image...")
+    print("\nBuilding Docker Image...")
     # Using --network=host might help with pip download speed/issues in some environments
     run_command(f"docker build -t {image_name} .")
     
     # Run Docker Container
-    print("\n🚢 Running Docker Container...")
+    print("\nRunning Docker Container...")
     # Stop and remove existing container if it exists
     subprocess.run(f"docker stop {container_name}", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     subprocess.run(f"docker rm {container_name}", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -48,8 +48,8 @@ def main():
     cmd = f"docker run -d -p 8501:8501 --name {container_name} {image_name}"
     run_command(cmd)
     
-    print("\n✅ Deployment Successful!")
-    print(f"👉 Access the app at: http://localhost:8501")
+    print("\nDeployment Successful!")
+    print(f"Access the app at: http://localhost:8501")
     print(f"   (Container name: {container_name})")
 
 if __name__ == "__main__":
