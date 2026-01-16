@@ -94,7 +94,7 @@ python src/evaluate.py --model_path models/cnn_lstm/best_model.pth --embedding_p
 ```
 *Note: Make sure your `EMBED_DIM` in `src/config.py` matches the dimension of the pretrained vectors if you are training with them or replacing them.*
 
-### 4. Web Application (The Vibe Reader)
+### 4. Web Application 
 
 We provide a **Streamlit** based web interface to easily interact with the trained models.
 
