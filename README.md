@@ -13,6 +13,64 @@ The model consists of three main components:
 2.  **Attention**: A **Bahdanau (Additive) Attention** mechanism that computes a weighted sum of encoder features based on the decoder's current hidden state. This allows the model to "look" at specific parts of the image at each time step.
 3.  **Decoder**: An **LSTM** network that takes the context vector (from attention) and previous word embedding to predict the next word in the sequence.
 
+```mermaid
+graph TD
+    %% Define simple styles
+   classDef layer fill:#1e88e5,stroke:#0d47a1,stroke-width:3px,color:#ffffff;
+   classDef data fill:#ff7043,stroke:#bf360c,stroke-width:3px,color:#ffffff;
+
+
+    %% --- ENCODER ---
+    subgraph ENCODER
+        Img(Input Image):::data
+        ResNet[ResNet50 Layer<br/>No FC/Pool]:::layer
+        Feats(Feature Map<br/>7x7 vectors):::data
+        
+        Img --> ResNet --> Feats
+    end
+
+    %% --- DECODER INPUT ---
+    subgraph EMBEDDING
+        Cap(Input Captions):::data
+        Embed[Embedding Layer]:::layer
+        Vecs(Word Vectors):::data
+        
+        Cap --> Embed --> Vecs
+    end
+
+    %% --- MAIN LOOP ---
+    subgraph DECODING_LOOP [Loop per Word]
+        direction TB
+        
+        %% Attention Step
+        Prev_Hidden(Previous Hidden State):::data
+        Attn[Attention Layer<br/>Linear + Softmax]:::layer
+        Context(Context Vector<br/>Weighted Image Areas):::data
+        
+        %% LSTM Step
+        Concat{Concatenate}
+        LSTM[LSTM Cell]:::layer
+        New_Hidden(New Hidden State):::data
+        
+        %% Prediction Step
+        Linear[Linear Output Layer]:::layer
+        Word(Predicted Word):::data
+
+        %% Connections
+        Feats & Prev_Hidden --> Attn
+        Attn --> Context
+        
+        Vecs & Context --> Concat
+        Concat --> LSTM
+        Prev_Hidden --> LSTM
+        
+        LSTM --> New_Hidden
+        New_Hidden --> Linear --> Word
+    end
+
+    %% Loop feedback
+    New_Hidden -.-> Prev_Hidden
+```
 ## Directory Structure
 
 ```
